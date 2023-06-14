@@ -1,0 +1,338 @@
+<html lang="en">
+    <head>
+            <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+         body{
+
+              margin: 0px;
+              padding: 0px;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+
+
+
+
+
+         }
+      canvas{box-shadow: black 10px 10px 50px;
+
+
+      }
+    </style>
+    </head>
+    <body>
+        <h1>THE SNAKE GAME</h1>
+    <canvas canvas id ="myCanvas" width =600 height = 600></canvas>
+    
+    <script>
+        
+        var g_Canvas = document.getElementById("myCanvas");
+        var g_Context = g_Canvas.getContext("2d");
+        
+        var g_FrameRate = 30;
+        var g_TimeInterval = 1000/g_FrameRate;
+        var SetIntervalID = setInterval(Gameloop,g_TimeInterval);
+        
+        var g_xposSquare = 100;
+        var g_yposSquare = 100;
+        var g_sizeSquare = 15;
+        //var g_colorSquare = "green";
+        
+        var g_xposFood = 10;
+        var g_yposFood = 10;
+        var g_sizeFood = 15;
+        var g_DelayFoodSpawn = 0;
+        
+        var g_Score = 0;
+        
+        var g_gameflag = false;
+        
+        function Gameloop()
+        {
+            //logic calculation
+            g_Snake_1.M_Movesnake();
+            //f_FoodSpawn();
+            F_FoodCollision();
+            F_SnakeBoundry();
+             
+            //clear screen
+            f_ClearScreen();
+
+            //draw
+            g_Snake_1.M_Draw(g_Context);
+            g_Food. M_CreateFood(g_Context);
+            f_Score();
+            F_Gameover();
+            
+        }
+        class C_Node
+            {
+                constructor(l_x,l_y,l_s)
+                {
+                    this.xposSqaure = l_x;
+                    this.yposSquare = l_y;
+                    this.sizesquare = l_s;
+                   
+                }
+                DrawSquare(l_Context)
+                {
+                    l_Context.fillStyle = "green";
+                    l_Context.fillRect(this.xposSqaure,this.yposSquare,this.sizesquare,this.sizesquare);
+                    
+                    l_Context.strokeStyle="black";
+                    l_Context.strokeRect(this.xposSqaure,this.yposSquare,this.sizesquare,this.sizesquare);
+                }
+            }
+        
+        class C_Snake
+            {
+                constructor(l_x,l_y,l_s)
+                {
+                    this.xposSqaure = l_x;
+                    this.yposSquare = l_y;
+                    this.sizesquare = l_s;
+                    this.snakeLength =7;
+                    this.snakemaxlength =100;
+                    this.snakespeed = 5;
+                    this.snakeArray =[];
+                    this.MovesnakeLeftFlag = 0;
+                    this.MovesnakeUpFlag = 0;
+                    this.MovesnakeRightFlag = 0;
+                    this.MovesnakeDownFlag = 0;
+                    this.XposArray =[];
+                    this.YposArray = [];
+                }
+                M_Create()
+                {
+                    var l_x = this.xposSqaure;
+                    for(var i=0;i<this.snakemaxlength;i++)
+                        {
+                            this.snakeArray[i]=new C_Node(l_x,this.yposSquare,this.sizesquare);
+                            l_x+=this.sizesquare;
+                        }
+                    var l_XposArray = this.xposSqaure;
+                    var l_YposArray = this.yposSquare;
+                    
+                    for(var j =0; j<this.snakemaxlength*this.sizesquare;j++)
+                        {
+                            this.XposArray[j] = l_XposArray;
+                            this.YposArray[j] = l_YposArray;
+                            l_XposArray++;
+                        }
+                }
+                M_Draw(l_Context)
+                {
+                     for(var i=0; i<this.snakeLength;i++)
+                        {
+                            this.snakeArray[i].DrawSquare(l_Context);
+                        }
+                }
+                 M_Movesnake()
+                    {
+                     if(this.MovesnakeLeftFlag==1 ||this.MovesnakeUpFlag==1|| this.MovesnakeRightFlag==1|| this.MovesnakeDownFlag==1)
+                            {
+                                for(var z=0;z<this.snakespeed;z++)
+                                    {
+                                        for(var i=this.XposArray.length-1; i > 0; i--)
+                                            {
+                                               this.XposArray[i] = this.XposArray[i-1];
+                                               this.YposArray[i] = this.YposArray[i-1];
+                                            }
+                                       
+
+                                        if(this.MovesnakeLeftFlag == 1)
+                                            {
+                                                this.XposArray[0]--;
+                                               
+                                            }
+                                        if(this.MovesnakeUpFlag == 1)
+                                            {
+                                               this.YposArray[0]--;
+                                            }
+                                        if(this.MovesnakeRightFlag == 1)
+                                            {
+                                                this.XposArray[0]++;
+                                            }
+                                        if(this.MovesnakeDownFlag == 1)
+                                            {
+                                                this.YposArray[0]++;
+                                            }
+                                    }
+                                
+                                var k =0;
+                                for(var j=0; j<this.snakeArray.length;j++)
+                                    {
+                                        this.snakeArray[j].xposSqaure=this.XposArray[k];
+                                        this.snakeArray[j].yposSquare=this.YposArray[k];                         k+=this.sizesquare;
+                                    }
+                            }
+                    }
+                
+            }
+        
+        class C_Food
+        {
+            constructor(l_x,l_y,l_s)
+                {
+                   this.xposfood = l_x;
+                   this.yposfood = l_y;
+                   this.sizefood = l_s;
+                }
+            M_CreateFood(l_Context)
+            {
+                l_Context.fillStyle="red";
+                l_Context.fillRect(this.xposfood,this.yposfood,this.sizefood,this.sizefood);
+            }
+        }
+        
+        function f_FoodSpawn()
+        {
+           // g_DelayFoodSpawn++;
+           // console.log("print lol");
+          //  if(g_DelayFoodSpawn%(g_FrameRate*5)==0)
+                {
+                 //   console.log("print double lol");
+                 //   console.log("print double lol");
+                    g_Food.xposfood=Math.round(Math.random()*g_Canvas.width+g_Food.sizefood);
+                    g_Food.yposfood=Math.round(Math.random()*g_Canvas.height+g_Food.sizefood);
+                }
+        }
+        
+        function F_FoodCollision()
+        {
+                    if(g_Snake_1.snakeArray[0].xposSqaure+g_Snake_1.snakeArray[0].sizesquare>g_Food.xposfood &&
+                      g_Snake_1.snakeArray[0].yposSquare+g_Snake_1.snakeArray[0].sizesquare>g_Food.yposfood &&
+                      g_Snake_1.snakeArray[0].xposSqaure<g_Food.xposfood+g_Food.sizefood &&
+                      g_Snake_1.snakeArray[0].yposSquare<g_Food.yposfood+g_Food.sizefood)
+                        {
+                            console.log("lol");
+                           g_Snake_1.snakeLength+=5;
+                            g_Score++;
+                           // g_DelayFoodSpawn=0;
+                            f_FoodSpawn();
+                        }
+        }
+        
+        function F_SnakeBoundry()
+        {
+            /*if((g_Snake_1.snakeArray[0].xposSqaure+g_Snake_1.snakeArray[0].sizesquare)>=g_Canvas.width)
+                {
+                    console.log("coll");
+                    g_gameflag=true;
+                }
+            */
+            if(g_Snake_1.snakeArray[0].xposSqaure >= g_Canvas.width)
+                        {
+                            //g_Snake_1.SnakeArray[0].xposSqaure = g_Canvas.width;
+                            g_Snake_1.snakespeed =0;
+                            console.log("colliding");
+                            g_gameflag = true;
+                            
+                        }
+                    
+                    if(g_Snake_1.snakeArray[0].yposSquare >= g_Canvas.height)
+                        {
+                            //g_Snake_1.SnakeArray.yposSquare = g_Canvas.height;
+                            g_Snake_1.snakespeed =0;
+                            console.log("colliding");
+                              g_gameflag = true;
+                        }
+                    
+                    if(g_Snake_1.snakeArray[0].xposSqaure < 0 )
+                        {
+                            //g_Snake_1.SnakeArray[0].xposSqaure = 0;
+                            g_Snake_1.snakespeed =0;
+                            console.log("colliding");
+                              g_gameflag = true;
+                            
+                        }
+                    
+                    if(g_Snake_1.snakeArray[0].yposSquare < 0)
+                        {
+                            //g_Snake_1.SnakeArray.yposSquare = 0;
+                            g_Snake_1.snakespeed =0;
+                            console.log("colliding");
+                            g_gameflag = true;
+                        }
+        }
+        
+        function f_Score()
+        {
+            g_Context.font ="20px Bungee Spice Regular"
+            g_Context.fillStyle = "black"
+            g_Context.fillText("SCORE : "+ g_Score, 450,20);    
+        }
+        
+        function f_ClearScreen()
+        {
+            g_Context.clearRect(0,0,g_Canvas.width,g_Canvas.height);
+            g_Context.strokeRect(0,0,g_Canvas.width,g_Canvas.height);
+        }
+        
+        function F_Gameover()
+        {
+            if(g_gameflag==true)
+                {
+                     g_Context.font="50px Calibri";
+                     g_Context.fillStyle="black";
+                     g_Context.fillText("GAME OVER",190,250);
+                }
+        }
+        
+        function f_KeyDownEventHandeler(l_Event)
+                {
+                    if(l_Event.keyCode == 37)
+                        {
+                            g_Snake_1.MovesnakeLeftFlag = 1;
+                        }
+                    if(l_Event.keyCode == 38)
+                        {
+                            g_Snake_1.MovesnakeUpFlag = 1;
+                        }
+                    if(l_Event.keyCode == 39)
+                        {
+                            g_Snake_1.MovesnakeRightFlag = 1;
+                        }
+                    if(l_Event.keyCode == 40)
+                        {
+                            g_Snake_1.MovesnakeDownFlag = 1;
+                        }
+                }
+                
+                function f_KeyUpEventHandeler(l_Event)
+                {
+                    if(l_Event.keyCode == 37)
+                        {
+                            g_Snake_1.MovesnakeLeftFlag = 0;
+                        }
+                    if(l_Event.keyCode == 38)
+                        {
+                            g_Snake_1.MovesnakeUpFlag = 0;
+                        }
+                    if(l_Event.keyCode == 39)
+                        {
+                            g_Snake_1.MovesnakeRightFlag = 0;
+                        }
+                    if(l_Event.keyCode == 40)
+                        {
+                            g_Snake_1.MovesnakeDownFlag = 0;
+                        }
+                }
+        
+        window.addEventListener("keydown",f_KeyDownEventHandeler);
+        window.addEventListener("keyup",f_KeyUpEventHandeler);
+        
+        var g_Snake_1 = new C_Snake(g_xposSquare,g_yposSquare,g_sizeSquare);
+        g_Snake_1.M_Create();
+        
+        var g_Food = new C_Food(g_xposFood,g_yposFood,g_sizeFood);
+        
+
+    </script>
+    </body>
+</html>
